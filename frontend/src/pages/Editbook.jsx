@@ -1,28 +1,31 @@
 import { Box } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import BookForm from "../components/BookForm";
-import { getBookDetailById } from "../modules/fetch";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { editBook, findBook } from "../fetch/books";
 
-export default function EditBookPage() {
+function EditBook() {
   const { id } = useParams();
-  const [book, setBook] = useState(null);
+  const [bookData, setBookData] = useState(null);
 
   useEffect(() => {
-    const fetchBook = async () => {
+    async function fetchData() {
       try {
-        const response = await getBookDetailById(id);
-        setBook(response.book);
-      } catch (e) {
-        console.log(e);
-      }
-    };
-    fetchBook();
-  }, [id]);
+        const currentBook = await findBook(id);
+        const { book } = await editBook(currentBook.book);
 
+        setBookData(book);
+      } catch (error) {
+        console.log(error);
+        window.alert(error);
+      }
+    }
+    fetchData();
+  }, []);
   return (
     <Box>
-      <BookForm bookData={book} />
+      <BookForm bookData={bookData}></BookForm>
     </Box>
   );
 }
+export default EditBook;

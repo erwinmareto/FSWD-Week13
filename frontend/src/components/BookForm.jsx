@@ -1,140 +1,125 @@
 import {
-  Button,
   FormControl,
   FormLabel,
-  Image,
+  FormErrorMessage,
+  FormHelperText,
   Input,
-  useToast,
+  Button,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { createBook, editBook } from "../modules/fetch";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { addBook, editBook } from "../fetch/books";
 
-export default function BookForm({ bookData }) {
+function BookForm({ bookData }) {
   const toast = useToast();
-  const [selectedImage, setSelectedImage] = useState(null);
+  const navigate = useNavigate();
+  const [currentImage, setCurrentImage] = useState();
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (!selectedImage) {
-      toast({
-        title: "Error",
-        description: "Please select image",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
+    // Check if there is already a book and use the data
     const formData = new FormData(event.target);
     if (bookData) {
       try {
-        await editBook(
-          bookData.id,
-          formData.get("title"),
-          formData.get("author"),
-          formData.get("publisher"),
-          parseInt(formData.get("year")),
-          parseInt(formData.get("pages"))
-        );
-        toast({
-          title: "Success",
-          description: "Book edited successfully",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
+        await editBook({
+          id: bookData.id,
+          title: formData.get("title"),
+          author: formData.get("author"),
+          publisher: formData.get("publisher"),
+          year: parseInt(formData.get("year")),
+          pages: parseInt(formData.get("pages")),
         });
+        Swal.fire({
+          icon: "success",
+          title: "Book Edited",
+          text: "Book Successfully Edited",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        navigate("/");
       } catch (error) {
-        toast({
-          title: "Error",
-          description: error.response.data.message || "Something went wrong",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
+        console.log(error);
+        Swal.fire({
+          icon: "error",
+          title: "Edit Failed",
+          text: "Update Failed",
+          showConfirmButton: false,
+          timer: 1500,
         });
       }
       return;
     }
+    // Add a new book
     try {
-      await createBook(formData);
-      event.target.reset();
-      toast({
-        title: "Success",
-        description: "Book created successfully",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
+      
+      await addBook(formData);
+      Swal.fire({
+        icon: "success",
+        title: "Create Success",
+        text: "Successfully Add Game",
+        showConfirmButton: false,
+        timer: 1500,
       });
-      setSelectedImage("");
+      navigate("/");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error.response.data.message || "Something went wrong",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
+      console.log(error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: "Failed to add book",
+        showConfirmButton: false,
+        timer: 1500,
       });
     }
   }
 
   useEffect(() => {
     if (bookData?.image) {
-      setSelectedImage(`http://localhost:8000/${bookData?.image}`);
+      setCurrentImage(`http://localhost:8000/${bookData.image}`);
     }
   }, [bookData]);
 
   return (
     <form onSubmit={handleSubmit}>
-      <VStack spacing={4}>
-        <FormControl>
+      <VStack>
+        <FormControl textAlign="center">
           <FormLabel>Title</FormLabel>
-          <Input name="title" required defaultValue={bookData?.title} />
-        </FormControl>
-        <FormControl>
+          <Input type="text" name="title" defaultValue={bookData?.title} />
           <FormLabel>Author</FormLabel>
-          <Input name="author" required defaultValue={bookData?.author} />
-        </FormControl>
-        <FormControl>
+          <Input type="text" name="author" defaultValue={bookData?.author} />
           <FormLabel>Publisher</FormLabel>
-          <Input name="publisher" required defaultValue={bookData?.publisher} />
-        </FormControl>
-        <FormControl>
+          <Input
+            type="text"
+            name="publisher"
+            defaultValue={bookData?.publisher}
+          />
           <FormLabel>Year</FormLabel>
-          <Input
-            name="year"
-            type="number"
-            required
-            defaultValue={bookData?.year}
-          />
-        </FormControl>
-        <FormControl>
+          <Input type="number" name="year" defaultValue={bookData?.year} />
           <FormLabel>Pages</FormLabel>
-          <Input
-            name="pages"
-            type="number"
-            required
-            defaultValue={bookData?.pages}
-          />
+          <Input type="number" name="pages" defaultValue={bookData?.pages} />
         </FormControl>
-        {selectedImage && (
-          <Image w={64} src={selectedImage} alt="Selected Image" />
-        )}
+
+        {/* {currentImage && (<Image src={currentImage} alt='book cover' />)} */}
+
         {!bookData?.image && (
-          <FormControl>
-            <FormLabel>Image</FormLabel>
-            <Input
-              name="image"
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                setSelectedImage(URL.createObjectURL(file));
-              }}
-            />
-          </FormControl>
+          <Input
+            name="image"
+            type="file"
+            onChange={(e) => {
+              setCurrentImage(e.target.files[0]);
+            }}
+          />
         )}
 
-        <Button type="submit">{bookData ? "Edit Book" : "Create Book"}</Button>
+        <Button mt={4} colorScheme="teal" type="submit">
+          {bookData ? "Edit Book" : "Add Book"}
+        </Button>
       </VStack>
     </form>
   );
 }
+
+export default BookForm;

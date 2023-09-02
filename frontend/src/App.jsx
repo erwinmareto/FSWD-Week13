@@ -1,11 +1,11 @@
 import { VStack } from "@chakra-ui/react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import BookDetails from "./pages/BooksDetail";
-import EditBookPage from "./pages/Editbook";
-import Homepage from "./pages/Homepage";
-import NewBookPage from "./pages/NewBooks";
-import Register from "./pages/Register";
+import Home from "./pages/Homepage.jsx";
+import AddBook from "./pages/AddBook";
+import EditBook from "./pages/EditBook";
+import LoginPage from "./pages/LoginPage";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
@@ -13,11 +13,24 @@ function App() {
       <Router>
         <Navbar />
         <Routes>
-          <Route path={"/"} element={<Homepage />} />
-          <Route path={"/register"} element={<Register />} />
-          <Route path={"/newbook"} element={<NewBookPage />} />
-          <Route path={"/books/:id"} element={<BookDetails />} />
-          <Route path={"/editbook/:id"} element={<EditBookPage />} />
+          <Route path={"/"} element={<Home />} />
+          <Route
+            path={"/add"}
+            element={
+              <PrivateRoute>
+                <AddBook />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={"/edit/:id"}
+            element={
+              <PrivateRoute>
+                <EditBook />
+              </PrivateRoute>
+            }
+          />
+          <Route path={"/login"} element={<LoginPage />} />
         </Routes>
       </Router>
     </VStack>

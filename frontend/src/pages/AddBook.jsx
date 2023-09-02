@@ -1,10 +1,12 @@
 import { Box } from "@chakra-ui/react";
 import BookForm from "../components/BookForm";
 
-export default function NewBookPage() {
+function AddBook() {
   return (
     <Box>
-      <BookForm />
+      <BookForm></BookForm>
     </Box>
   );
 }
+
+export default AddBook;
